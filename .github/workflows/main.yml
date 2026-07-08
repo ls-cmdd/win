@@ -1,14 +1,18 @@
-name: 'Release app'
+name: 'Verify CI'
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-cache
 
 jobs:
-  build-and-release:
-    permissions:
-      contents: write
+  verify-build:
     runs-on: windows-latest
 
     steps:
@@ -31,6 +35,14 @@ jobs:
         with:
           workspaces: 'src-tauri -> target'
 
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('.github/workflows/main.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
+
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
@@ -49,14 +61,7 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri app (dry-run)
+        run: npm run tauri build -- --target x86_64-pc-windows-msvc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: app-v__VERSION__
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
-          releaseDraft: true
-          prerelease: false
-          args: --target x86_64-pc-windows-msvc

@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+env:
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-cache
+
 jobs:
   build-and-release:
     permissions:
@@ -19,11 +22,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: 'src-tauri -> target'
+
+      - name: Cache vcpkg binaries
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('.github/workflows/release.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -31,12 +48,14 @@ jobs:
       - name: Install OpenSSL (vcpkg)
         run: |
           vcpkg install openssl:x64-windows-static-md
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
           echo "OPENSSL_DIR=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows-static-md" >> $env:GITHUB_ENV
           echo "OPENSSL_STATIC=1" >> $env:GITHUB_ENV
+          echo "VCPKGRS_TRIPLET=x64-windows-static-md" >> $env:GITHUB_ENV
         shell: pwsh
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
@@ -46,9 +65,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: app-v__VERSION__
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'اشتراكي - إصدار ${{ github.ref_name }}'
+          releaseBody: 'See the assets below to download and install this version.'
           releaseDraft: true
           prerelease: false
           args: --target x86_64-pc-windows-msvc
