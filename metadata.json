@@ -1,0 +1,8 @@
+{
+  "name": "اشتراكي - نظام إدارة الاشتراكات",
+  "description": "نظام آمن وغير متصل بالإنترنت لإدارة المشتركين، الخطط، الاشتراكات والمدفوعات، مشفر محلياً ومحمي بترخيص رقمي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

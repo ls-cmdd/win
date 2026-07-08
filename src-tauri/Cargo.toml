@@ -1,0 +1,34 @@
+[package]
+name = "submanager"
+version = "0.1.0"
+description = "A Subscription Manager Desktop App"
+authors = ["Sajad"]
+edition = "2021"
+
+[workspace]
+members = [
+    "crates/core-db",
+    "crates/core-license",
+    "crates/core-domain",
+    "crates/core-api"
+]
+
+[build-dependencies]
+tauri-build = { version = "^2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "^2.0.0", features = [] }
+tauri-plugin-shell = "^2.0.0"
+tauri-plugin-log = "^2.0.0"
+tauri-plugin-notification = "^2.0.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+core-db = { path = "crates/core-db" }
+core-domain = { path = "crates/core-domain" }
+core-license = { path = "crates/core-license" }
+core-api = { path = "crates/core-api" }
+rusqlite = { version = "0.31.0", features = ["bundled-sqlcipher"] }
+tokio = { version = "1.37.0", features = ["full"] }
+chrono = "0.4"
+sha2 = "0.10"
+hex = "0.4"

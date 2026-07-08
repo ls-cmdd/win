@@ -1,0 +1,9 @@
+[package]
+name = "core-domain"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bcrypt = "0.15"
+rusqlite = { version = "0.31", features = ["bundled-sqlcipher"] }
+serde = { version = "1.0", features = ["derive"] }

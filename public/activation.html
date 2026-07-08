@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8">
+    <title>تفعيل النظام</title>
+    <style>
+        body { display:flex; justify-content:center; align-items:center; height:100vh; background:#f3f4f6; font-family:sans-serif; margin:0; }
+        .card { background:white; padding:2rem; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center; width: 400px; max-width: 90vw; }
+        textarea { width:100%; height:100px; margin-bottom:1rem; padding:0.5rem; box-sizing:border-box; border:1px solid #ccc; border-radius:4px; font-family:monospace; }
+        button { background:#0ea5e9; color:white; border:none; padding:0.5rem 1rem; border-radius:4px; cursor:pointer; width:100%; font-size:1rem; }
+        button:hover { background:#0284c7; }
+        #lic-err { color:#dc2626; display:none; margin-top:1rem; font-size:0.875rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>تفعيل الترخيص</h2>
+        <p style="color:#4b5563; font-size:0.875rem; margin-bottom:1.5rem;">النسخة غير مفعلة. يرجى إدخال مفتاح الترخيص لفتح النظام.</p>
+        <textarea id="lic-key" placeholder="ألصق مفتاح الترخيص هنا..."></textarea>
+        <button id="lic-btn">تفعيل النظام</button>
+        <p id="lic-err"></p>
+    </div>
+    <script type="module">
+        const invoke = (window.__TAURI__ && window.__TAURI__.core && window.__TAURI__.core.invoke) || 
+                       (window.__TAURI__ && window.__TAURI__.invoke);
+        
+        document.getElementById('lic-btn').addEventListener('click', async () => {
+            const key = document.getElementById('lic-key').value;
+            const errEl = document.getElementById('lic-err');
+            if (!key.trim()) {
+                errEl.innerText = 'يرجى إدخال المفتاح أولاً';
+                errEl.style.display = 'block';
+                return;
+            }
+            try {
+                await invoke('activate_license', { key: key.trim() });
+                errEl.innerText = 'تم التفعيل بنجاح. يرجى إعادة تشغيل التطبيق.';
+                errEl.style.color = '#10b981';
+                errEl.style.display = 'block';
+                setTimeout(() => window.close(), 3000);
+            } catch (e) {
+                errEl.innerText = typeof e === 'string' ? e : 'حدث خطأ أثناء التفعيل';
+                errEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
